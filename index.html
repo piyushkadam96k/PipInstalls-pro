@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipInstalls PRO — The Neon Observatory</title>
+    <meta name="description" content="Enterprise-grade Python package manager with recursive dependency solving, vulnerability scanning, OS compatibility matrix, and secure lockfile generation.">
+    <meta name="keywords" content="pip, python, package manager, pypi, dependencies, requirements.txt, lockfile, developer tools, devtools">
+    <meta name="author" content="kadam">
+    <meta name="theme-color" content="#7C3AED">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PipInstalls PRO — Enterprise Python Package Manager">
+    <meta property="og:description" content="Browse 8000+ PyPI packages, scan OS compatibility, generate lockfiles with SHA256 hashes, and export Dockerfiles — all from one visual interface.">
+    <meta property="og:image" content="og-preview.png">
+    <meta property="og:site_name" content="PipInstalls PRO">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PipInstalls PRO — Enterprise Python Package Manager">
+    <meta name="twitter:description" content="Browse 8000+ PyPI packages, scan OS compatibility, generate lockfiles with SHA256 hashes, and export Dockerfiles.">
+    <meta name="twitter:image" content="og-preview.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Fonts & Libraries -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <i class="ph-duotone ph-package brand-icon"></i>
+                <h2>PipInstalls PRO</h2>
+                <a href="https://github.com/kadam" target="_blank" title="My GitHub" class="github-link">
+                    <i class="ph-duotone ph-github-logo"></i>
+                </a>
+            </div>
+
+            <p class="description">Enterprise-grade Python package manager. Select, compare, and generate secure install scripts.</p>
+
+            <!-- Theme Toggle -->
+            <button class="theme-toggle-btn" id="theme-toggle">
+                <i class="ph-duotone ph-moon" id="theme-icon"></i>
+                <span id="theme-label">Dark Mode</span>
+            </button>
+
+            <form id="fetch-form" class="search-box-form">
+                <div class="search-box" style="position: relative;">
+                    <i class="ph-duotone ph-magnifying-glass"></i>
+                    <input type="text" id="pkg-input" placeholder="Search any PyPI package..." autocomplete="off">
+                    <div id="search-autocomplete" class="search-autocomplete" style="display: none;"></div>
+                </div>
+                <button type="submit" class="btn btn-accent btn-fetch" id="fetch-btn"><i class="ph-duotone ph-rocket-launch"></i> Fetch</button>
+            </form>
+
+            <div class="sidebar-actions" style="margin-top: 15px;">
+                <button class="btn btn-ghost" id="upload-req-btn" title="Import from requirements.txt" style="width: 100%; justify-content: center; border: 1px dashed var(--outline);">
+                    <i class="ph-duotone ph-upload-simple"></i> Import requirements.txt
+                </button>
+                <input type="file" id="req-file-input" accept=".txt" style="display: none;">
+            </div>
+
+            <!-- Category Tabs -->
+            <nav class="categories" id="category-nav">
+                <button class="category-btn active" data-category="all"><i class="ph-duotone ph-squares-four"></i> All Packages</button>
+                <button class="category-btn" data-category="data-science"><i class="ph-duotone ph-brain"></i> Data Science</button>
+                <button class="category-btn" data-category="vision"><i class="ph-duotone ph-camera"></i> Vision</button>
+                <button class="category-btn" data-category="web"><i class="ph-duotone ph-globe-hemisphere-west"></i> Web & API</button>
+                <button class="category-btn" data-category="devtools"><i class="ph-duotone ph-wrench"></i> Dev Tools</button>
+            </nav>
+
+            <!-- Package Counter -->
+            <div class="pkg-counter" id="pkg-counter">
+                <i class="ph-duotone ph-cube"></i> <span id="pkg-count-value">0</span> packages loaded
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header glass-panel">
+                <div class="header-info">
+                    <h1>Workspace</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" id="share-btn" title="Share via URL">
+                        <i class="ph-duotone ph-share-network"></i> Share
+                    </button>
+                    <button class="action-btn" id="compare-btn" title="Compare 2 pinned packages" disabled>
+                        <i class="ph-duotone ph-arrows-left-right"></i> Compare
+                    </button>
+                    <button class="action-btn" id="venv-btn" title="Generate venv setup commands">
+                        <i class="ph-duotone ph-terminal-window"></i> venv
+                    </button>
+                    <button class="action-btn primary" id="open-cart-btn">
+                        <i class="ph-duotone ph-shopping-cart"></i>
+                        <span id="cart-count" class="badge">0</span> Checkout
+                    </button>
+                </div>
+            </header>
+
+            <div class="grid-container" id="packages-grid">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading global package directory...</p>
+                </div>
+            </div>
+            
+            <!-- Infinite Scroll Sentinel -->
+            <div id="scroll-sentinel" style="height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 20px; opacity: 0; transition: opacity 0.2s;">
+                <div class="spinner" style="width: 28px; height: 28px;"></div>
+                <span style="margin-left: 10px; color: var(--text-secondary);">Fetching more PyPI modules...</span>
+            </div>
+        </main>
+
+        <!-- Stats Footer -->
+        <footer class="app-footer" id="app-footer">
+            <div class="footer-inner">
+                <span>Powered by <a href="https://pypi.org" target="_blank">PyPI</a></span>
+                <span class="footer-dot">·</span>
+                <span><span id="footer-pkg-count">0</span> packages available</span>
+                <span class="footer-dot">·</span>
+                <span>Built with <span class="footer-heart">❤️</span> by <a href="https://github.com/kadam" target="_blank">kadam</a></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Cart / Verification Modal -->
+    <div class="modal-overlay" id="cart-modal">
+        <div class="modal-content glass-panel">
+            <header class="modal-header">
+                <h2><i class="ph-duotone ph-shield-check" style="color: var(--accent);"></i> Dependency Bundle</h2>
+                <button class="close-btn" id="close-modal-btn"><i class="ph ph-x"></i></button>
+            </header>
+            <div class="modal-body">
+                <div class="command-section">
+                    <h3><i class="ph-duotone ph-terminal-window"></i> Pip Command</h3>
+                    <div class="code-box">
+                        <code id="pip-command">pip install </code>
+                        <button class="copy-btn" id="copy-cmd-btn" title="Copy"><i class="ph-duotone ph-copy"></i></button>
+                    </div>
+                </div>
+                <div class="health-section" style="margin-top: 15px; padding: 18px; border-radius: var(--radius-md); background: var(--surface-container);">
+                    <h3 style="margin-bottom: 10px;"><i class="ph-duotone ph-heartbeat" style="color: var(--tertiary);"></i> Workspace Health</h3>
+                    <div id="health-report" style="font-size: 0.9rem;">
+                        <div class="empty-state-text">Add packages to analyze workspace safety.</div>
+                    </div>
+                </div>
+                <div class="verification-section">
+                    <h3><i class="ph-duotone ph-fingerprint" style="color: var(--green);"></i> Cryptographic Hashes (SHA256)</h3>
+                    <div class="verification-list" id="verification-list">
+                        <div class="empty-state-text">Your workspace is empty.</div>
+                    </div>
+                </div>
+            </div>
+            <footer class="modal-footer" style="flex-wrap: wrap; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-ghost" id="clear-cart-btn" style="margin-right: auto;"><i class="ph-duotone ph-trash"></i> Clear</button>
+                <button class="btn btn-accent" id="download-lock-btn" title="Generate recursive requirements.lock"><i class="ph-duotone ph-lock-key"></i> .lock</button>
+                <button class="btn btn-accent" id="download-req-btn" title="requirements.txt"><i class="ph-duotone ph-file-text"></i> .txt</button>
+                <button class="btn btn-accent" id="download-toml-btn" title="pyproject.toml"><i class="ph-duotone ph-file-code"></i> .toml</button>
+                <button class="btn btn-accent" id="download-docker-btn" title="Dockerfile"><i class="ph-duotone ph-docker-logo"></i> docker</button>
+                <button class="btn btn-accent" id="download-bat-btn" title="Windows Batch"><i class="ph-duotone ph-windows-logo"></i> .bat</button>
+                <button class="btn btn-accent" id="download-sh-btn" title="Linux Shell"><i class="ph-duotone ph-linux-logo"></i> .sh</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Dependency Tree Modal -->
+    <div class="modal-overlay" id="dep-modal">
+        <div class="modal-content glass-panel">
+            <header class="modal-header">
+                <h2 id="dep-modal-title"><i class="ph-duotone ph-tree-structure" style="color: var(--green);"></i> Dependencies</h2>
+                <button class="close-btn" id="close-dep-modal"><i class="ph ph-x"></i></button>
+            </header>
+            <div class="modal-body" id="dep-tree-content">
+                <div class="loading-state"><div class="spinner"></div><p>Fetching dependency data...</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="modal-overlay" id="compare-modal">
+        <div class="modal-content glass-panel" style="max-width: 900px;">
+            <header class="modal-header">
+                <h2><i class="ph-duotone ph-arrows-left-right" style="color: var(--accent-2);"></i> Package Comparison</h2>
+                <button class="close-btn" id="close-compare-modal"><i class="ph ph-x"></i></button>
+            </header>
+            <div class="modal-body" id="compare-content"></div>
+        </div>
+    </div>
+
+    <!-- Venv Script Modal -->
+    <div class="modal-overlay" id="venv-modal">
+        <div class="modal-content glass-panel">
+            <header class="modal-header">
+                <h2><i class="ph-duotone ph-terminal-window" style="color: var(--accent);"></i> Virtual Environment Setup</h2>
+                <button class="close-btn" id="close-venv-modal"><i class="ph ph-x"></i></button>
+            </header>
+            <div class="modal-body" id="venv-content"></div>
+        </div>
+    </div>
+
+    <!-- Documentation Modal -->
+    <div class="modal-overlay" id="docs-modal">
+        <div class="modal-content glass-panel" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
+            <header class="modal-header">
+                <h2 id="docs-modal-title"><i class="ph-duotone ph-book-open-text" style="color: var(--accent-2);"></i> Documentation</h2>
+                <button class="close-btn" id="close-docs-modal"><i class="ph ph-x"></i></button>
+            </header>
+            <div class="modal-body" id="docs-content" style="flex: 1; overflow-y: auto; text-align: left; padding: 25px; line-height: 1.6;"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
