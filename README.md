@@ -105,8 +105,3 @@ Uses the public [PyPI JSON API](https://pypi.org/pypi/{package}/json) and [Top P
 
 MIT — free for personal and commercial use.
 
----
-
-<div align="center">
-    <sub>Built with ❤️ by <a href="https://github.com/kadam">kadam</a> · Powered by <a href="https://pypi.org">PyPI</a></sub>
-</div>
